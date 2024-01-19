@@ -1,5 +1,6 @@
 package com.micro.user.service.service.impl;
 
+import com.micro.user.service.entities.Hotel;
 import com.micro.user.service.entities.Rating;
 import com.micro.user.service.entities.User;
 import com.micro.user.service.exceptions.ResourceNotFoundException;
@@ -10,12 +11,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -54,14 +58,36 @@ public class UserServiceImpl implements UserService {
 
         //Fetching Ratings from above user from the Rating Services
 
-        ArrayList<Rating> forObject = restTemplate.getForObject("http://localhost:8083/ratings/users/"+user.getUserId(), ArrayList.class);
+        Rating[] forObject = restTemplate.getForObject("http://localhost:8083/ratings/users/"+user.getUserId(), Rating[].class);
 
-        user.setRatings(forObject);
+        log.info(" {} ",forObject);
 
-        log.info("{}",forObject);
+        //converting array to arrayList
+        List<Rating> ratings = Arrays.stream(forObject).toList();
+
+        //=======================================================================
+        List<Rating> ratingList = ratings.stream().map(rating ->{
+
+            //api call to hotel service to get the hotel
+
+            //http://localhost:8082/hotel/e5459d35-5dc1-4ba5-b294-0154d04cf27a
+
+            ResponseEntity<Hotel> forEntity = restTemplate.getForEntity("http://localhost:8082/hotel/"+rating.getHotelId(), Hotel.class);
+
+            Hotel hotel = forEntity.getBody();
+
+            log.info("Response status code: {} ",hotel);
+
+            //set the hotel to rating
+            rating.setHotel(hotel);
+           
+            //return the rating
+            return rating;
+        }).collect(Collectors.toList());
+       //=================================================================================
+        user.setRatings(ratingList);
 
         return user;
-
 
     }
 }
