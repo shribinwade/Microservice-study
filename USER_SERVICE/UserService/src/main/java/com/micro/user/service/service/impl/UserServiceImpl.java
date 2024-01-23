@@ -4,18 +4,16 @@ import com.micro.user.service.entities.Hotel;
 import com.micro.user.service.entities.Rating;
 import com.micro.user.service.entities.User;
 import com.micro.user.service.exceptions.ResourceNotFoundException;
+import com.micro.user.service.external.services.HotelService;
 import com.micro.user.service.repositories.UserRepository;
 import com.micro.user.service.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +29,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private HotelService hotelService;
 
 
 //    @Autowired
@@ -60,7 +61,7 @@ public class UserServiceImpl implements UserService {
 
         Rating[] forObject = restTemplate.getForObject("http://RATING-SERVICE/ratings/users/"+user.getUserId(), Rating[].class);
 
-        log.info(" {} ",forObject);
+        log.info("{}",forObject);
 
         //converting array to arrayList
         List<Rating> ratings = Arrays.stream(forObject).toList();
@@ -74,16 +75,18 @@ public class UserServiceImpl implements UserService {
 
             ResponseEntity<Hotel> forEntity = restTemplate.getForEntity("http://HOTEL-SERVICE/hotel/"+rating.getHotelId(), Hotel.class);
 
-            Hotel hotel = forEntity.getBody();
+            Hotel hotel = hotelService.getHotel(rating.getHotelId());
 
             log.info("Response status code: {} ",hotel);
 
             //set the hotel to rating
             rating.setHotel(hotel);
 
+            System.out.println(rating.getId());
             //return the rating
             return rating;
         }).collect(Collectors.toList());
+
        //=================================================================================
         user.setRatings(ratingList);
 

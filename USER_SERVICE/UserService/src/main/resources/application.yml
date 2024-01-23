@@ -7,8 +7,12 @@ spring:
       username: root
       password: root
       driver-class-name: com.mysql.cj.jdbc.Driver
+
   application:
     name: User-Service
+
+  config:
+    import: configserver:http://localhost:8085
 
 
   jpa:

@@ -8,6 +8,8 @@ spring:
     password: root
   application:
     name: Hotel-Service
+  config:
+    import: configserver:http://localhost:8085
 
 
   jpa:
