@@ -3,6 +3,8 @@ package com.micro.user.service.controllers;
 import com.micro.user.service.entities.User;
 import com.micro.user.service.service.UserService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,7 +29,9 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    @CircuitBreaker(name = "ratingHotelBreaker",fallbackMethod = "ratingHotelFallback")
+//    @CircuitBreaker(name = "ratingHotelBreaker",fallbackMethod = "ratingHotelFallback")
+    @Retry(name = "ratingHotelService", fallbackMethod = "ratingHotelFallback")
+    @RateLimiter(name ="userRateLimiter", fallbackMethod = "ratingHotelFallback")
     public ResponseEntity<User> getSingleUser(@PathVariable String userId){
         User user = userService.getUser(userId);
         return ResponseEntity.ok(user);
@@ -36,6 +40,7 @@ public class UserController {
     //creating fall back method for circuitbreaker
 
     public ResponseEntity<User> ratingHotelFallback(String userId,Exception ex){
+
        log.info("Fallback is executed because service is down : ", ex.getMessage());
         User user = User.builder()
                 .email("dummy@gmail.com")
@@ -43,7 +48,7 @@ public class UserController {
                 .about("Created bcz some service is down")
                 .userId("12345")
                 .build();
-        return new ResponseEntity<>(user,HttpStatus.OK);
+        return new ResponseEntity<>(user,HttpStatus.BAD_REQUEST);
     }
 
 
