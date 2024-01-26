@@ -8,3 +8,9 @@ spring:
       database: microservices
   application:
     name: Rating-Service
+
+
+okta:
+  oauth2:
+    issuer: https://dev-13377038.okta.com/oauth2/default
+    audience: api://default

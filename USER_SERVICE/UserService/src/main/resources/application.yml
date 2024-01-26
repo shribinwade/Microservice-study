@@ -14,7 +14,6 @@ spring:
   config:
     import: configserver:http://localhost:8085
 
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -22,6 +21,24 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://dev-13377038.okta.com/oauth2/default
+      client:
+        registration:
+          my-internal-client:
+            provider: okta
+            authorizationGrantType: client_credentials
+            scope: internal
+            clientId: 0oaepmf2ibQauMTrT5d7
+            clientSecret: pd5dJZK9qjJRMWtOU5H1kY6RzZzGCAgBFqJMEdwRlEdjRQMyBjnxRKxKeuQKjTIc
+        provider:
+            okta:
+              issuerUri: https://dev-13377038.okta.com/oauth2/default
+
+
 
 
 
@@ -67,6 +84,13 @@ resilience4j:
         limitForPeriod: 4
         timeoutDuration: 1s
 
+
+okta:
+  oauth2:
+    issuer: https://dev-13377038.okta.com/oauth2/default
+    audience: api://default
+    client-id: 0oaepmf2ibQauMTrT5d7
+    client-secret: pd5dJZK9qjJRMWtOU5H1kY6RzZzGCAgBFqJMEdwRlEdjRQMyBjnxRKxKeuQKjTIc
 
 
 
